@@ -1,0 +1,34 @@
+# ── Dữ liệu nhạy cảm ──────────────────────────────────────────────────────────
+cookies.txt
+
+# ── File tải xuống ─────────────────────────────────────────────────────────────
+downloads/
+
+# ── Binary / công cụ ngoài (người dùng tự tải khi cần) ───────────────────────
+ffmpeg/
+yt-dlp.exe
+yt-dlp.new.exe
+
+# ── Build artifacts (PyInstaller) ─────────────────────────────────────────────
+build/
+dist/
+*.spec.bak
+
+# ── Python cache ──────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+venv/
+env/
+.venv/
+.env/
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+*.part
+*.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YT Downloader</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="logo">
+      <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#FF0000"/><polygon points="13,10 13,22 23,16" fill="white"/></svg>
+      <span>YT Downloader</span>
+    </div>
+    <div class="header-right">
+      <button class="btn-ghost" onclick="updateYtdlp()" id="btn-update">↑ Update yt-dlp</button>
+      <button class="btn-ghost" onclick="toggleFilesPanel()">📁 Downloads</button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ffmpeg banner -->
+    <div id="ffmpeg-banner" class="ffmpeg-banner hidden">
+      <div class="ffmpeg-banner-text">
+        <strong>⚠️ Chưa có ffmpeg</strong> — Không thể tải video chất lượng cao (720p+) và không dùng được tính năng Trim.
+      </div>
+      <button class="btn-install-ffmpeg" id="btn-install-ffmpeg" onclick="installFfmpeg()">
+        ⬇ Tự động cài ffmpeg
+      </button>
+      <div id="ffmpeg-install-progress" class="hidden">
+        <div class="ffmpeg-bar-wrap"><div class="ffmpeg-bar" id="ffmpeg-bar"></div></div>
+        <span id="ffmpeg-install-msg" class="muted"></span>
+      </div>
+    </div>
+
+    <!-- URL card -->
+    <section class="card">
+      <h2>Dán link YouTube</h2>
+      <div class="url-row">
+        <input type="url" id="url-input" placeholder="https://www.youtube.com/watch?v=..." />
+        <button id="btn-fetch" onclick="fetchInfo()">
+          <span id="fetch-text">Lấy thông tin</span>
+          <span id="fetch-spinner" class="spinner hidden"></span>
+        </button>
+      </div>
+
+      <!-- Login / Cookies -->
+      <div class="cookie-section">
+        <div class="cookie-section-title">🔑 Xác thực YouTube <span class="required-badge">Bắt buộc</span></div>
+
+        <!-- PRIMARY: cookies.txt -->
+        <div class="cookie-option cookie-option-primary">
+          <div class="cookie-option-label">✅ Cách 1 — Upload cookies.txt <span class="badge-recommended">Khuyến nghị</span></div>
+          <div class="cookie-file-row">
+            <div id="cookies-status" class="cookies-status hidden">
+              <span class="cookies-active" id="cookies-active-text">✓ cookies.txt đang hoạt động</span>
+              <button class="btn-del-cookies" onclick="deleteCookies()">Xóa & export lại</button>
+            </div>
+            <div id="cookies-stale-warn" class="cookies-stale-warn hidden">
+              ⚠️ Cookie đã hơn 24h — nên export lại để tránh lỗi "empty file"
+            </div>
+            <label class="btn-upload-cookies" id="upload-label">
+              📂 Chọn file cookies.txt
+              <input type="file" id="cookies-file-input" accept=".txt" onchange="uploadCookies(this)" style="display:none" />
+            </label>
+          </div>
+          <div class="cookie-steps muted">
+            <b>Cách lấy:</b> Cài
+            <a href="https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc" target="_blank" class="link">Get cookies.txt LOCALLY</a>
+            → mở <b>youtube.com</b> (đã đăng nhập) → bấm icon extension → <b>Export</b> → upload file vào đây
+          </div>
+        </div>
+
+        <!-- SECONDARY: browser (requires browser CLOSED) -->
+        <div class="cookie-option">
+          <div class="cookie-option-label">⚠️ Cách 2 — Dùng trình duyệt <span class="badge-warn">Phải đóng browser trước</span></div>
+          <div id="browser-btns" class="browser-btns">
+            <button class="browser-btn selected" data-browser="">Không dùng</button>
+          </div>
+          <div class="cookie-option-hint muted">⚠️ Phải <b>đóng hoàn toàn</b> Chrome/Edge trước khi bấm Get Info — nếu không sẽ bị lỗi "Could not copy cookie database"</div>
+        </div>
+      </div>
+
+      <div id="url-error" class="error-msg hidden"></div>
+    </section>
+
+    <!-- Video Info -->
+    <section id="video-info" class="card hidden">
+      <div class="video-meta">
+        <img id="thumbnail" src="" alt="" />
+        <div class="video-details">
+          <h3 id="video-title"></h3>
+          <p id="video-uploader" class="muted"></p>
+          <p id="video-duration" class="muted"></p>
+          <p id="video-views"    class="muted"></p>
+        </div>
+      </div>
+
+      <!-- Quality -->
+      <div class="section-block">
+        <div class="section-label">Chất lượng video</div>
+        <div id="quality-list" class="quality-grid"></div>
+      </div>
+
+      <!-- Trim -->
+      <div class="section-block">
+        <label class="section-label toggle-label">
+          <input type="checkbox" id="trim-toggle" onchange="toggleTrim()" />
+          ✂️ Cắt video trước khi tải
+        </label>
+        <div id="no-ffmpeg-trim-warn" class="warn-msg hidden">
+          ⚠️ Tính năng Trim cần ffmpeg. Hãy cài ffmpeg ở trên.
+        </div>
+        <div id="trim-controls" class="trim-controls hidden">
+          <div class="time-row">
+            <div class="time-field">
+              <label>Bắt đầu</label>
+              <input type="text" id="start-time" placeholder="0:00" oninput="updateTimeline()" />
+            </div>
+            <div class="time-field">
+              <label>Kết thúc</label>
+              <input type="text" id="end-time" placeholder="0:00" oninput="updateTimeline()" />
+            </div>
+          </div>
+          <div class="tl-track">
+            <div class="tl-selected" id="tl-selected"></div>
+            <div class="tl-handle" id="tl-left"></div>
+            <div class="tl-handle" id="tl-right"></div>
+          </div>
+          <div class="tl-labels">
+            <span id="tl-start-label">0:00</span>
+            <span id="tl-end-label">0:00</span>
+          </div>
+          <p class="muted" style="font-size:.8rem;margin-top:6px">Kéo thanh hoặc nhập thời gian để chọn đoạn cần cắt.</p>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="startDownload()">⬇ Tải video</button>
+    </section>
+
+    <!-- Active jobs -->
+    <section id="active-jobs" class="hidden">
+      <div class="section-title">Đang tải xuống</div>
+      <div id="jobs-list"></div>
+    </section>
+
+  </main>
+
+  <!-- Files panel -->
+  <div id="files-overlay" class="overlay hidden" onclick="toggleFilesPanel()"></div>
+  <aside id="files-panel" class="files-panel hidden">
+    <div class="files-header">
+      <h3>File đã tải</h3>
+      <button onclick="toggleFilesPanel()" class="btn-ghost">✕</button>
+    </div>
+    <div id="files-list" class="files-list"><p class="muted center">Đang tải...</p></div>
+  </aside>
+
+</div>
+<script src="/static/script.js"></script>
+</body>
+</html>

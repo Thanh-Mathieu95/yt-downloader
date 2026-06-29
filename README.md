@@ -6,12 +6,6 @@ Runs as a web interface in your browser with quality selection, video trimming, 
 
 ---
 
-## Preview
-
-![YT Downloader UI](assets/preview.png)
-
----
-
 ## How it works
 
 1. **Paste** a YouTube URL into the input field

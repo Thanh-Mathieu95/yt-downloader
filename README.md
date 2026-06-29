@@ -6,6 +6,25 @@ Runs as a web interface in your browser with quality selection, video trimming, 
 
 ---
 
+## Preview
+
+![YT Downloader UI](assets/preview.png)
+
+---
+
+## How it works
+
+1. **Paste** a YouTube URL into the input field
+2. Click **Fetch info** — the app fetches the video title, thumbnail, duration, and available qualities
+3. **Authenticate** with your YouTube cookies (required by YouTube)
+4. **Select quality** — from 144p up to 1080p Full HD
+5. *(Optional)* Enable **Trim** to cut a specific segment before downloading
+6. Click **Download** and save the file to your machine
+
+All processing happens **locally on your machine** — no data is sent anywhere.
+
+---
+
 ## Features
 
 - Download videos from **144p up to 1080p**
